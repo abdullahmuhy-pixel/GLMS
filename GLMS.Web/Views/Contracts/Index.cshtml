@@ -1,0 +1,59 @@
+@model IEnumerable<Contract>
+@{ ViewData["Title"] = "Contracts"; }
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="text-primary">Contracts</h3>
+    <a asp-action="Create" class="btn btn-success">+ New Contract</a>
+</div>
+<div class="card p-3 mb-4">
+    <form method="get" asp-action="Index" class="row g-2 align-items-end">
+        <div class="col-md-3">
+            <label class="form-label small">Start Date (from)</label>
+            <input type="date" name="startDate" class="form-control" value="@ViewBag.StartDate" />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label small">End Date (to)</label>
+            <input type="date" name="endDate" class="form-control" value="@ViewBag.EndDate" />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label small">Status</label>
+            <select name="status" class="form-select">
+                <option value="">All</option>
+                @foreach (ContractStatus s in Enum.GetValues(typeof(ContractStatus)))
+                { <option value="@s" selected="@(ViewBag.Status?.ToString()==s.ToString())">@s</option> }
+            </select>
+        </div>
+        <div class="col-md-3"><button type="submit" class="btn btn-primary w-100">Filter</button></div>
+    </form>
+</div>
+<div class="card">
+    <table class="table table-hover mb-0">
+        <thead class="table-dark">
+            <tr><th>Client</th><th>Service Level</th><th>Start</th><th>End</th><th>Status</th><th>PDF</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var c in Model)
+            {
+                <tr>
+                    <td>@c.Client?.Name</td>
+                    <td>@c.ServiceLevel</td>
+                    <td>@c.StartDate.ToString("dd MMM yyyy")</td>
+                    <td>@c.EndDate.ToString("dd MMM yyyy")</td>
+                    <td>
+                        @{ var badge = c.Status switch { ContractStatus.Active => "bg-success", ContractStatus.Expired => "bg-danger", ContractStatus.OnHold => "bg-warning text-dark", _ => "bg-secondary" }; }
+                        <span class="badge @badge">@c.Status</span>
+                    </td>
+                    <td>
+                        @if (!string.IsNullOrEmpty(c.SignedAgreementPath))
+                        { <a asp-action="Download" asp-route-id="@c.Id" class="btn btn-sm btn-outline-primary">Download</a> }
+                        else { <span class="text-muted small">None</span> }
+                    </td>
+                    <td>
+                        <a asp-action="Details" asp-route-id="@c.Id" class="btn btn-sm btn-outline-info">Details</a>
+                        <a asp-action="Edit" asp-route-id="@c.Id" class="btn btn-sm btn-outline-secondary">Edit</a>
+                    </td>
+                </tr>
+            }
+            @if (!Model.Any()) { <tr><td colspan="7" class="text-center text-muted py-3">No contracts found.</td></tr> }
+        </tbody>
+    </table>
+</div>

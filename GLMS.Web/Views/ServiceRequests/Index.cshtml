@@ -1,0 +1,28 @@
+@model IEnumerable<ServiceRequest>
+@{ ViewData["Title"] = "Service Requests"; }
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="text-primary">Service Requests</h3>
+    <a asp-action="Create" class="btn btn-success">+ New Request</a>
+</div>
+<div class="card">
+    <table class="table table-hover mb-0">
+        <thead class="table-dark">
+            <tr><th>Contract / Client</th><th>Description</th><th>USD</th><th>ZAR</th><th>Status</th><th>Created</th><th></th></tr>
+        </thead>
+        <tbody>
+            @foreach (var sr in Model)
+            {
+                <tr>
+                    <td><div>@sr.Contract?.Client?.Name</div><small class="text-muted">@sr.Contract?.ServiceLevel</small></td>
+                    <td>@sr.Description</td>
+                    <td>$@sr.CostUSD.ToString("N2")</td>
+                    <td class="text-success fw-bold">R@sr.CostZAR.ToString("N2")</td>
+                    <td><span class="badge bg-warning text-dark">@sr.Status</span></td>
+                    <td>@sr.CreatedAt.ToString("dd MMM yyyy")</td>
+                    <td><a asp-action="Details" asp-route-id="@sr.Id" class="btn btn-sm btn-outline-info">Details</a></td>
+                </tr>
+            }
+            @if (!Model.Any()) { <tr><td colspan="7" class="text-center text-muted py-3">No requests yet.</td></tr> }
+        </tbody>
+    </table>
+</div>

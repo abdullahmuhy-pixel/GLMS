@@ -1,0 +1,56 @@
+@model ServiceRequest
+@{ ViewData["Title"] = "New Service Request"; }
+<h3 class="text-primary mb-4">New Service Request</h3>
+<div class="card p-4" style="max-width:580px;">
+    <form asp-action="Create" method="post">
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+        <div class="mb-3">
+            <label asp-for="ContractId" class="form-label">Contract (Active only)</label>
+            <select asp-for="ContractId" class="form-select" asp-items="ViewBag.Contracts">
+                <option value="">-- Select Active Contract --</option>
+            </select>
+            <span asp-validation-for="ContractId" class="text-danger small"></span>
+            <div class="form-text">Expired and On Hold contracts are blocked.</div>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Description" class="form-label">Description</label>
+            <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+            <span asp-validation-for="Description" class="text-danger small"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="CostUSD" class="form-label">Cost (USD)</label>
+            <input asp-for="CostUSD" class="form-control" type="number" step="0.01" min="0.01" id="costUsdInput" />
+            <span asp-validation-for="CostUSD" class="text-danger small"></span>
+        </div>
+        <div class="alert alert-success py-2" id="zarPreview" style="display:none;">
+            <strong>Estimated ZAR:</strong> <span id="zarAmount" class="fw-bold fs-5">R 0.00</span>
+            <small class="text-muted ms-2">(live rate)</small>
+        </div>
+        <div class="d-flex gap-2 mt-3">
+            <button type="submit" class="btn btn-success">Submit Request</button>
+            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        const input = document.getElementById('costUsdInput');
+        const preview = document.getElementById('zarPreview');
+        const zarSpan = document.getElementById('zarAmount');
+        let timer;
+        input.addEventListener('input', function () {
+            clearTimeout(timer);
+            const usd = parseFloat(this.value);
+            if (!usd || usd <= 0) { preview.style.display = 'none'; return; }
+            timer = setTimeout(async () => {
+                try {
+                    const res = await fetch('/ServiceRequests/GetZarRate?usd=' + usd);
+                    const data = await res.json();
+                    zarSpan.textContent = 'R ' + data.zar.toFixed(2);
+                    preview.style.display = 'block';
+                } catch { zarSpan.textContent = 'Rate unavailable'; preview.style.display = 'block'; }
+            }, 500);
+        });
+    </script>
+}
