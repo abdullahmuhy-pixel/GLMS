@@ -11,8 +11,10 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="2.5.4" />
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../GLMS.Web/GLMS.Web.csproj" />
+    <ProjectReference Include="../GLMS.API/GLMS.API.csproj" />
   </ItemGroup>
 </Project>
