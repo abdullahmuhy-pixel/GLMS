@@ -1,10 +1,13 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using GLMS.Web.Models;
 using GLMS.API.Repositories;
+
 namespace GLMS.API.Controllers
 {
     [ApiController]
     [Route("api/servicerequests")]
+    [Authorize]
     public class ServiceRequestsApiController : ControllerBase
     {
         private readonly IServiceRequestRepository _repo;
@@ -18,17 +21,14 @@ namespace GLMS.API.Controllers
             _contractRepo = contractRepo;
         }
 
-        // GET /api/servicerequests
         [HttpGet]
+        [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAll()
-        {
-            var requests = await _repo.GetAllAsync();
-            return Ok(requests);
-        }
+            => Ok(await _repo.GetAllAsync());
 
-        // GET /api/servicerequests/5
         [HttpGet("{id}")]
+        [AllowAnonymous]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetById(int id)
@@ -38,15 +38,14 @@ namespace GLMS.API.Controllers
             return Ok(sr);
         }
 
-        // POST /api/servicerequests — with workflow validation
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Create([FromBody] ServiceRequest sr)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            // Workflow rule: block Expired or OnHold contracts
             var contract = await _contractRepo.GetByIdAsync(sr.ContractId);
             if (contract == null)
                 return BadRequest(new { message = "Contract not found." });
